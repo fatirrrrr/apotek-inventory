@@ -1,4 +1,4 @@
-?# Sistem Manajemen Inventaris Apotek Lokal
+## Sistem Manajemen Inventaris Apotek Lokal
 
 Aplikasi **sederhana** berbasis Laravel 12 untuk mengelola inventaris, penjualan, dan laporan apotek lokal.
 
