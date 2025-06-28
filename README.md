@@ -76,7 +76,6 @@ Aplikasi **sederhana** berbasis Laravel 12 untuk mengelola inventaris, penjualan
 | ------------------- | :---: | :---: |
 | CRUD Obat/Kategori  |   ✔   |   ✖   |
 | Transaksi Penjualan |   ✔   |   ✔   |
-| Hapus Transaksi     |   ✔   |   ✖   |
 | Export Laporan      |   ✔   |   ✖   |
 | Lihat Dashboard     |   ✔   |   ✔   |
 
