@@ -17,7 +17,7 @@
                 </div>
                 <div class="card-body">
                     @if(session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <div class="alert alert-permanent" role="alert">
                             <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
@@ -34,25 +34,38 @@
                                         <h6 class="card-title">
                                             <i class="fas fa-info-circle me-2"></i>Informasi Transaksi
                                         </h6>
-                                        <div class="row">
-                                            <div class="col-6">
+                                        <div class="row g-2">
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="nama_pembeli">Nama Pembeli <span class="text-danger">*</span></label>
+                                                <input type="text" 
+                                                    class="form-control @error('nama_pembeli') is-invalid @enderror" 
+                                                    id="nama_pembeli" 
+                                                    name="nama_pembeli"
+                                                    value="{{ old('nama_pembeli') }}" 
+                                                    required>
+                                                @error('nama_pembeli')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-md-6">
                                                 <label class="form-label">Kode Transaksi</label>
                                                 <input type="text" class="form-control" value="{{ $kodeTransaksi }}" readonly>
                                                 <input type="hidden" name="kode_transaksi" value="{{ $kodeTransaksi }}">
                                             </div>
-                                            <div class="col-6">
+                                            <div class="col-md-6 mt-2">
                                                 <label class="form-label">Tanggal</label>
-                                                <input type="text" class="form-control" value="{{ date('d/m/Y H:i') }}" readonly>
-                                                <input type="hidden" name="tanggal_transaksi" value="{{ now() }}">
+                                                <input type="text" class="form-control" id="tanggal_transaksi_display" readonly>
+                                                <input type="hidden" name="tanggal" id="tanggal_transaksi">
                                             </div>
-                                        </div>
-                                        <div class="mt-2">
-                                            <label class="form-label">Kasir</label>
-                                            <input type="text" class="form-control" value="{{ auth()->user()->name }}" readonly>
+                                            <div class="col-md-6 mt-2">
+                                                <label class="form-label">Kasir</label>
+                                                <input type="text" class="form-control" value="{{ auth()->user()->name }}" readonly>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            <!-- Sisi kanan tetap -->
                             <div class="col-md-6">
                                 <div class="card bg-success text-white">
                                     <div class="card-body">
@@ -89,6 +102,7 @@
                                                         data-harga="{{ $obat->harga }}"
                                                         data-stok="{{ $obat->stok }}"
                                                         data-expired="{{ $obat->expired ? $obat->expired->format('d/m/Y') : '' }}"
+                                                        data-deskripsi="{{ $obat->deskripsi }}"
                                                         {{ old('obat_id') == $obat->id ? 'selected' : '' }}>
                                                     {{ $obat->nama_obat }} - {{ $obat->kategori->nama_kategori }} 
                                                     (Stok: {{ $obat->stok }}) 
@@ -106,12 +120,12 @@
                                             Jumlah <span class="text-danger">*</span>
                                         </label>
                                         <input type="number" 
-                                               class="form-control @error('jumlah') is-invalid @enderror" 
-                                               id="jumlah" 
-                                               name="jumlah" 
-                                               value="{{ old('jumlah', 1) }}" 
-                                               min="1" 
-                                               required>
+                                            class="form-control @error('jumlah') is-invalid @enderror" 
+                                            id="jumlah"     
+                                            name="jumlah" 
+                                            value="{{ old('jumlah', 1) }}" 
+                                            min="1" 
+                                            required>
                                         @error('jumlah')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -119,25 +133,26 @@
                                             Stok tersedia: <span id="stokTersedia">-</span>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-3">
                                         <label for="harga_satuan" class="form-label">Harga Satuan</label>
                                         <input type="text" 
-                                               class="form-control" 
-                                               id="harga_satuan_display" 
-                                               readonly>
+                                            class="form-control" 
+                                            id="harga_satuan_display" 
+                                            readonly>
                                         <input type="hidden" name="harga_satuan" id="harga_satuan">
                                     </div>
                                 </div>
                                 
                                 <!-- Info Obat Terpilih -->
                                 <div id="infoObat" class="mt-3" style="display: none;">
-                                    <div class="alert alert-info">
+                                    <div class="bg-info-subtle p-3 rounded">
                                         <div class="d-flex justify-content-between">
                                             <div>
                                                 <strong id="namaObatTerpilih">-</strong><br>
                                                 <small>Kategori: <span id="kategoriObat">-</span></small><br>
-                                                <small>Tanggal Expired: <span id="tanggalExpired">-</span></small>
+                                                <small>Tanggal Expired: <span id="tanggalExpired">-</span></small><br>
+                                                <small>Deskripsi: <span id="deskripsiObat">-</span></small>
                                             </div>
                                             <div class="text-end">
                                                 <h5>Total: <span id="totalHarga">Rp 0</span></h5>
@@ -170,9 +185,24 @@
 </div>
 @endsection
 
-@section('scripts') 
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // TANGGAL
+    const tanggalInput = document.getElementById('tanggal_transaksi_display');
+    const tanggalHidden = document.getElementById('tanggal_transaksi');
+    function pad(n){return n<10?'0'+n:n}
+    function formatTanggal(date) {
+        return pad(date.getDate())+'/'+pad(date.getMonth()+1)+'/'+date.getFullYear()+' '+pad(date.getHours())+':'+pad(date.getMinutes());
+    }
+    if (tanggalInput && tanggalHidden) {
+        const now = new Date();
+        tanggalInput.value = formatTanggal(now);
+        tanggalHidden.value = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate()) +
+            ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    }
+
+    // OBAT
     const obatSelect = document.getElementById('obat_id');
     const jumlahInput = document.getElementById('jumlah');
     const hargaSatuanInput = document.getElementById('harga_satuan');
@@ -182,6 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const namaObatSpan = document.getElementById('namaObatTerpilih');
     const kategoriObatSpan = document.getElementById('kategoriObat');
     const tanggalExpiredSpan = document.getElementById('tanggalExpired');
+    const deskripsiObatSpan = document.getElementById('deskripsiObat');
     const totalHargaSpan = document.getElementById('totalHarga');
     const totalBayarH2 = document.getElementById('totalBayar');
     const btnSubmit = document.getElementById('btnSubmit');
@@ -189,21 +220,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let hargaSatuan = 0;
     let stokTersedia = 0;
 
-    // Function untuk format rupiah
     function formatRupiah(angka) {
-        return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return 'Rp ' + (angka || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
 
-    // Function untuk menghitung total
     function hitungTotal() {
         const jumlah = parseInt(jumlahInput.value) || 0;
         const total = hargaSatuan * jumlah;
-        
         totalHargaSpan.textContent = formatRupiah(total);
         totalBayarH2.textContent = formatRupiah(total);
-        
+
         // Validasi stok
-        if (jumlah > stokTersedia) {
+        if (jumlah > stokTersedia && stokTersedia > 0) {
             jumlahInput.classList.add('is-invalid');
             btnSubmit.disabled = true;
             jumlahInput.nextElementSibling.textContent = 'Jumlah melebihi stok yang tersedia!';
@@ -211,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
             jumlahInput.nextElementSibling.classList.add('invalid-feedback');
         } else {
             jumlahInput.classList.remove('is-invalid');
-            if (obatSelect.value && jumlah > 0) {
+            if (obatSelect.value && jumlah > 0 && jumlah <= stokTersedia) {
                 btnSubmit.disabled = false;
             }
             // Reset form text
@@ -222,70 +250,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Event listener untuk perubahan obat
     obatSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
-        
         if (this.value) {
             hargaSatuan = parseInt(selectedOption.dataset.harga) || 0;
             stokTersedia = parseInt(selectedOption.dataset.stok) || 0;
             const expired = selectedOption.dataset.expired || '-';
-            
+            const deskripsi = selectedOption.dataset.deskripsi || '-';
+
             // Update tampilan
             hargaSatuanInput.value = hargaSatuan;
             hargaSatuanDisplay.value = formatRupiah(hargaSatuan);
             stokTersediaSpan.textContent = stokTersedia;
-            
+
             // Update info obat
             const obatText = selectedOption.textContent;
             const parts = obatText.split(' - ');
             namaObatSpan.textContent = parts[0];
-            kategoriObatSpan.textContent = parts[1].split(' (')[0];
+            kategoriObatSpan.textContent = parts[1] ? parts[1].split(' (')[0] : '-';
             tanggalExpiredSpan.textContent = expired;
-            
-            // Tampilkan info obat
+            deskripsiObatSpan.textContent = deskripsi;
+
             infoObatDiv.style.display = 'block';
-            
-            // Hitung total
             hitungTotal();
-            
-            // Set max untuk input jumlah
+
             jumlahInput.max = stokTersedia;
-            
-            // Cek jika stok habis
+
+            // Jika stok habis
             if (stokTersedia <= 0) {
                 jumlahInput.disabled = true;
                 btnSubmit.disabled = true;
-                const alertDiv = infoObatDiv.querySelector('.alert');
-                alertDiv.classList.remove('alert-info');
-                alertDiv.classList.add('alert-danger');
-                alertDiv.innerHTML = '<strong>Stok obat ini sudah habis!</strong><br>Silakan pilih obat lain.';
             } else {
                 jumlahInput.disabled = false;
-                const alertDiv = infoObatDiv.querySelector('.alert');
-                alertDiv.classList.remove('alert-danger');
-                alertDiv.classList.add('alert-info');
-                
-                // Cek jika akan expired dalam 30 hari
-                if (expired !== '-') {
-                    const expiredDate = new Date(expired.split('/').reverse().join('-'));
-                    const now = new Date();
-                    const diffTime = expiredDate - now;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (diffDays <= 30 && diffDays > 0) {
-                        alertDiv.innerHTML += '<br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> Obat ini akan expired dalam ' + diffDays + ' hari!</small>';
-                    } else if (diffDays <= 0) {
-                        alertDiv.classList.remove('alert-info');
-                        alertDiv.classList.add('alert-danger');
-                        alertDiv.innerHTML += '<br><small><i class="fas fa-times-circle"></i> Obat ini sudah expired!</small>';
-                        jumlahInput.disabled = true;
-                        btnSubmit.disabled = true;
-                    }
-                }
             }
         } else {
-            // Reset semua field
             hargaSatuan = 0;
             stokTersedia = 0;
             hargaSatuanInput.value = '';
@@ -300,53 +298,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Event listener untuk perubahan jumlah
     jumlahInput.addEventListener('input', function() {
         hitungTotal();
     });
 
-    // Validasi form sebelum submit
     document.getElementById('transaksiForm').addEventListener('submit', function(e) {
         const obatId = obatSelect.value;
         const jumlah = parseInt(jumlahInput.value) || 0;
-        
         if (!obatId) {
             e.preventDefault();
             alert('Silakan pilih obat terlebih dahulu!');
             obatSelect.focus();
             return false;
         }
-        
         if (jumlah <= 0) {
             e.preventDefault();
             alert('Jumlah harus lebih dari 0!');
             jumlahInput.focus();
             return false;
         }
-        
         if (jumlah > stokTersedia) {
             e.preventDefault();
             alert('Jumlah melebihi stok yang tersedia!');
             jumlahInput.focus();
             return false;
         }
-        
         // Konfirmasi transaksi
         const total = hargaSatuan * jumlah;
         const obatNama = obatSelect.options[obatSelect.selectedIndex].textContent.split(' - ')[0];
-        
         if (!confirm(`Konfirmasi Transaksi:\n\nObat: ${obatNama}\nJumlah: ${jumlah}\nTotal: ${formatRupiah(total)}\n\nProses transaksi ini?`)) {
             e.preventDefault();
             return false;
         }
-        
-        // Disable tombol submit untuk mencegah double submit
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Memproses...';
     });
 
-    // Auto focus pada select obat
+    // Autofocus
     obatSelect.focus();
 });
 </script>
-@endsection
+@endpush

@@ -30,24 +30,26 @@ class TransaksiController extends Controller
         }
         if ($request->filled('tanggal')) {
             if ($request->tanggal == 'today') {
-                $query->whereDate('created_at', today());
+                $query->whereDate('tanggal_transaksi', today());
             } elseif ($request->tanggal == 'week') {
-                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                $query->whereBetween('tanggal_transaksi', [now()->startOfWeek(), now()->endOfWeek()]);
             } elseif ($request->tanggal == 'month') {
-                $query->whereMonth('created_at', now()->month);
+                $query->whereMonth('tanggal_transaksi', now()->month);
             }
         }
 
-        $transaksi = $query->orderBy('created_at', 'desc')->paginate(10);
+        $transaksi = $query->orderBy('tanggal_transaksi', 'desc')->paginate(10);
 
         $totalTransaksi = Transaksi::count();
         $totalPenjualan = Transaksi::sum('total_harga');
-        $transaksiHariIni = Transaksi::whereDate('created_at', today())->count();
+        $transaksiHariIni = Transaksi::whereDate('tanggal_transaksi', today())->count();
 
-        $firstTransaksi = Transaksi::orderBy('created_at', 'asc')->first();
-        $rataRataHarian = $firstTransaksi
-            ? $totalPenjualan / (now()->diffInDays($firstTransaksi->created_at) + 1)
-            : 0;
+        // PERBAIKI LOGIKA INI:
+        $jumlahHariUnik = Transaksi::select(DB::raw('DATE(tanggal_transaksi) as hari'))
+            ->distinct()
+            ->get()
+            ->count();
+        $rataRataHarian = $jumlahHariUnik > 0 ? $totalPenjualan / $jumlahHariUnik : 0;
 
         return view('transaksi.index', compact(
             'transaksi',
@@ -103,7 +105,8 @@ class TransaksiController extends Controller
                     'harga_satuan' => $harga_satuan,
                     'total_harga' => $total_harga,
                     'nama_pembeli' => $request->nama_pembeli,
-                    'user_id' => Auth::id(), // Gunakan Auth::id() bukan auth()->id()
+                    'user_id' => Auth::id(),
+                    'tanggal_transaksi' => $request->tanggal,
                 ]);
 
                 // Kurangi stok obat
@@ -146,17 +149,21 @@ class TransaksiController extends Controller
 
         // Apply filters
         if ($request->filled('tanggal_dari')) {
-            $query->whereDate('created_at', '>=', $request->tanggal_dari);
+            $query->whereDate('tanggal_transaksi', '>=', $request->tanggal_dari);
         }
 
         if ($request->filled('tanggal_sampai')) {
-            $query->whereDate('created_at', '<=', $request->tanggal_sampai);
+            $query->whereDate('tanggal_transaksi', '<=', $request->tanggal_sampai);
         }
 
-        $transaksis = $query->orderBy('created_at', 'desc')->get();
+        $transaksis = $query->orderBy('tanggal_transaksi', 'desc')->get();
         $total_pendapatan = $transaksis->sum('total_harga');
 
-        $pdf = Pdf::loadView('transaksi.pdf', compact('transaksis', 'total_pendapatan', 'request'));
+        $pdf = Pdf::loadView('transaksi.pdf', [
+            'transaksi' => $transaksis,
+            'total_pendapatan' => $total_pendapatan,
+            'request' => $request
+        ]);
 
         return $pdf->download('laporan-transaksi-' . date('Y-m-d') . '.pdf');
     }
@@ -165,5 +172,19 @@ class TransaksiController extends Controller
     public function exportExcel(Request $request)
     {
         return Excel::download(new TransaksiExport($request), 'laporan-transaksi-' . date('Y-m-d') . '.xlsx');
+    }
+
+    public function printReceipt($id)
+    {
+        // Contoh: ambil data transaksi dan return view cetak
+        $transaksi = Transaksi::findOrFail($id);
+        return view('transaksi.print', compact('transaksi'));
+    }
+
+    public function detail($id)
+    {
+        $transaksi = Transaksi::with(['obat.kategori', 'user'])->findOrFail($id);
+        // kembalikan view detail yang berisi HTML untuk modal
+        return view('transaksi.detail', compact('transaksi'));
     }
 }

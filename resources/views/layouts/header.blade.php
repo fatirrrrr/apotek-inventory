@@ -3,7 +3,7 @@
     <div class="container-fluid">
         <!-- Page Title -->
         <div class="navbar-brand mb-0 h1">
-            @yield('page-title', 'Dashboard')
+            @yield('page-title', 'Sistem Manajemen Inventaris Apotek')
         </div>
 
         <!-- Navbar toggler for mobile -->

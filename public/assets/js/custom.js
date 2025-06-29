@@ -379,6 +379,26 @@ function refreshDashboardStats() {
         .catch((error) => console.log("Error refreshing dashboard:", error));
 }
 
+function showDetail(id) {
+    console.log("showDetail dipanggil dengan id:", id); // Tambahkan ini
+    $("#detailModal").modal("show");
+    $("#detailContent").html(
+        '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>'
+    );
+    $.ajax({
+        url: "/transaksi/detail/" + id,
+        type: "GET",
+        success: function (res) {
+            $("#detailContent").html(res);
+        },
+        error: function (xhr) {
+            $("#detailContent").html(
+                '<div class="text-danger text-center">Gagal memuat detail transaksi.</div>'
+            );
+        },
+    });
+}
+
 // Print receipt function
 window.printReceipt = function (transaksiId) {
     const printWindow = window.open(

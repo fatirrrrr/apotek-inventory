@@ -3,8 +3,8 @@
     <!-- Logo/Brand -->
     <div class="text-center mb-4">
         <h4 class="fw-bold">
-            <i class="bi bi-shop"></i>
-            Apotek System
+            <i class="bi-heart-pulse"></i>
+            Manajemen Apotek
         </h4>
         <small class="text-light opacity-75">Inventaris & Penjualan</small>
     </div>
@@ -37,32 +37,28 @@
         <hr class="text-white-50 my-3">
 
         <!-- Master Data -->
+        @if(auth()->user()->role === 'admin')
         <div class="nav-item">
             <div class="text-white-50 small fw-semibold mb-2 px-3">MASTER DATA</div>
-            
             <a class="nav-link {{ request()->routeIs('kategori.*') ? 'active' : '' }}" href="{{ route('kategori.index') }}">
                 <i class="bi bi-tags me-2"></i>
                 Kategori Obat
             </a>
-            
             <a class="nav-link {{ request()->routeIs('obat.*') ? 'active' : '' }}" href="{{ route('obat.index') }}">
                 <i class="bi bi-capsule me-2"></i>
                 Data Obat
             </a>
         </div>
-
-        <!-- Divider -->
         <hr class="text-white-50 my-3">
+        @endif
 
         <!-- Transaksi -->
         <div class="nav-item">
             <div class="text-white-50 small fw-semibold mb-2 px-3">TRANSAKSI</div>
-            
             <a class="nav-link {{ request()->routeIs('transaksi.create') ? 'active' : '' }}" href="{{ route('transaksi.create') }}">
                 <i class="bi bi-plus-circle me-2"></i>
                 Penjualan Baru
             </a>
-            
             <a class="nav-link {{ request()->routeIs('transaksi.index') ? 'active' : '' }}" href="{{ route('transaksi.index') }}">
                 <i class="bi bi-receipt me-2"></i>
                 Riwayat Transaksi
@@ -70,22 +66,22 @@
         </div>
 
         <!-- Divider -->
+        @if(auth()->user()->role === 'admin')
         <hr class="text-white-50 my-3">
 
-        <!-- Laporan -->
+        <!-- Laporan (hanya admin) -->
         <div class="nav-item">
             <div class="text-white-50 small fw-semibold mb-2 px-3">LAPORAN</div>
-            
             <a class="nav-link" href="{{ route('transaksi.export.pdf') }}" target="_blank">
                 <i class="bi bi-file-earmark-pdf me-2"></i>
                 Export PDF
             </a>
-            
             <a class="nav-link" href="{{ route('transaksi.export.excel') }}">
                 <i class="bi bi-file-earmark-excel me-2"></i>
                 Export Excel
             </a>
         </div>
+        @endif
     </nav>
 
     <!-- Bottom Info -->

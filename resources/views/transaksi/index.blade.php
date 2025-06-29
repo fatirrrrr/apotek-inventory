@@ -31,22 +31,25 @@
                     @endif
 
                     <!-- Filter dan Pencarian -->
-                    <div class="row mb-3">
-                        <div class="col-md-4">
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-6 mb-2 mb-md-0">
                             <form method="GET" action="{{ route('transaksi.index') }}">
                                 <div class="input-group">
+                                    <span class="input-group-text bg-white">
+                                        <i class="bi bi-search"></i>
+                                    </span>
                                     <input type="text" 
                                            class="form-control" 
                                            name="search" 
                                            placeholder="Cari kode transaksi atau nama obat..."
                                            value="{{ request('search') }}">
                                     <button class="btn btn-outline-secondary" type="submit">
-                                        <i class="fas fa-search"></i>
+                                        Cari
                                     </button>
                                 </div>
                             </form>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3 mb-2 mb-md-0">
                             <form method="GET" action="{{ route('transaksi.index') }}">
                                 <input type="hidden" name="search" value="{{ request('search') }}">
                                 <select name="tanggal" class="form-select" onchange="this.form.submit()">
@@ -57,15 +60,17 @@
                                 </select>
                             </form>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3 text-md-end text-start">
                             <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-outline-success btn-sm" onclick="exportExcel()">
-                                    <i class="fas fa-file-excel me-1"></i>Excel
-                                </button>
-                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="exportPDF()">
-                                    <i class="fas fa-file-pdf me-1"></i>PDF
-                                </button>
-                            </div>
+                                @if(auth()->user()->role === 'admin')
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="exportExcel()">
+                                        <i class="bi bi-file-earmark-excel me-1"></i>Excel
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="exportPDF()">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                                    </button>
+                                @endif
+                            </div>  
                         </div>
                     </div>
 
@@ -157,7 +162,9 @@
                                         <td>
                                             <span class="badge bg-primary">{{ $item->kode_transaksi }}</span>
                                         </td>
-                                        <td>{{ $item->tanggal_transaksi->format('d/m/Y H:i') }}</td>
+                                        <td>
+                                            {{ $item->tanggal_transaksi ? \Carbon\Carbon::parse($item->tanggal_transaksi)->format('d/m/Y H:i') : '-' }}
+                                        </td>
                                         <td>
                                             <strong>{{ $item->obat->nama_obat }}</strong>
                                             @if($item->obat->expired && $item->obat->expired < now()->addDays(30))
@@ -240,17 +247,8 @@
 
 @section('scripts')
 <script>
-function showDetail(id) {
-    // Implementasi untuk menampilkan detail transaksi
-    $('#detailModal').modal('show');
-    $('#detailContent').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>');
-    
-    // AJAX call untuk mendapatkan detail transaksi
-    // Ini akan diimplementasikan nanti di controller
-}
 
 function printReceipt(id) {
-    // Implementasi untuk mencetak struk
     window.open(`{{ url('transaksi/print') }}/${id}`, '_blank');
 }
 
@@ -258,15 +256,15 @@ function exportExcel() {
     const search = '{{ request("search") }}';
     const tanggal = '{{ request("tanggal") }}';
     let url = '{{ route("transaksi.export.excel") }}';
-    
+
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (tanggal) params.append('tanggal', tanggal);
-    
+
     if (params.toString()) {
         url += '?' + params.toString();
     }
-    
+
     window.open(url, '_blank');
 }
 
@@ -274,15 +272,15 @@ function exportPDF() {
     const search = '{{ request("search") }}';
     const tanggal = '{{ request("tanggal") }}';
     let url = '{{ route("transaksi.export.pdf") }}';
-    
+
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (tanggal) params.append('tanggal', tanggal);
-    
+
     if (params.toString()) {
         url += '?' + params.toString();
     }
-    
+
     window.open(url, '_blank');
 }
 

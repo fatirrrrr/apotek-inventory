@@ -34,7 +34,7 @@
             <div class="card-body">
                 @if($obats->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
+                        <table class="table table-hover table-sm align-middle">
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">No</th>
@@ -64,21 +64,21 @@
                                                 {{ $obat->kategori->nama_kategori ?? 'Tidak ada kategori' }}
                                             </span>
                                         </td>
-                                        <td class="fw-bold text-success">
+                                        <td class="fw-bold text-success text-nowrap">
                                             Rp {{ number_format($obat->harga, 0, ',', '.') }}
                                         </td>
                                         <td>
                                             @if($obat->isOutOfStock())
                                                 <span class="badge bg-danger">{{ $obat->stok }}</span>
                                             @elseif($obat->isLowStock())
-                                                <span class="badge bg-warning">{{ $obat->stok }}</span>
+                                                <span class="badge bg-warning text-dark">{{ $obat->stok }}</span>
                                             @else
                                                 <span class="badge bg-success">{{ $obat->stok }}</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="text-nowrap">
                                             <span class="text-muted">
-                                                {{ $obat->expired->format('d/m/Y') }}
+                                                {{ $obat->expired ? $obat->expired->format('d/m/Y') : '-' }}
                                             </span>
                                         </td>
                                         <td>
@@ -87,7 +87,7 @@
                                                     <i class="bi bi-x-circle me-1"></i>Expired
                                                 </span>
                                             @elseif($obat->isExpiringSoon())
-                                                <span class="badge bg-warning">
+                                                <span class="badge bg-warning text-dark">
                                                     <i class="bi bi-exclamation-triangle me-1"></i>Akan Expired
                                                 </span>
                                             @else
@@ -96,11 +96,11 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="text-nowrap">
                                             <div class="btn-group btn-group-sm" role="group">
                                                 <a href="{{ route('obat.edit', $obat->id) }}" 
-                                                   class="btn btn-outline-warning"
-                                                   title="Edit">
+                                                class="btn btn-outline-warning"
+                                                title="Edit">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </a>
                                                 <button type="button" 
@@ -117,9 +117,9 @@
                         </table>
                     </div>
 
-                    <!-- Pagination -->
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div class="text-muted">
+                    <!-- Pagination & info -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mt-3">
+                        <div class="text-muted mb-2 mb-md-0">
                             Menampilkan {{ $obats->firstItem() }} - {{ $obats->lastItem() }} 
                             dari {{ $obats->total() }} data
                         </div>
@@ -155,7 +155,7 @@
             </div>
             <div class="modal-body">
                 <p>Apakah Anda yakin ingin menghapus obat <strong id="deleteItemName"></strong>?</p>
-                <div class="alert alert-warning">
+                <div class="alert alert-permanent" style="background-color: #fff3cd;">
                     <i class="bi bi-info-circle me-2"></i>
                     <strong>Perhatian:</strong> Data yang sudah dihapus tidak dapat dikembalikan!
                 </div>

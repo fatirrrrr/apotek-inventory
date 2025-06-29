@@ -135,7 +135,7 @@
                     <strong>Perhatian:</strong> Kategori ini memiliki <span id="obatCount"></span> obat. 
                     Hapus semua obat dalam kategori ini terlebih dahulu sebelum menghapus kategori.
                 </div>
-                <div class="alert alert-warning">
+                <div class="alert alert-permanent " style="background-color: #fff3cd;">
                     <i class="bi bi-info-circle me-2"></i>
                     <strong>Perhatian:</strong> Data yang sudah dihapus tidak dapat dikembalikan!
                 </div>

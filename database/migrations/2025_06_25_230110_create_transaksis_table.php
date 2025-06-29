@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('total_harga', 10, 2);
             $table->string('nama_pembeli');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->timestamp('tanggal_transaksi')->nullable();
             $table->timestamps();
         });
     }

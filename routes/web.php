@@ -51,6 +51,11 @@ Route::middleware(['auth'])->group(function () {
         // Export Routes
         Route::get('/transaksi/export-pdf', [TransaksiController::class, 'exportPdf'])->name('transaksi.export.pdf');
         Route::get('/transaksi/export-excel', [TransaksiController::class, 'exportExcel'])->name('transaksi.export.excel');
+
+        // Cetak struk transaksi
+        Route::get('/transaksi/print/{id}', [TransaksiController::class, 'printReceipt'])->name('transaksi.print');
+
+        Route::get('/transaksi/detail/{id}', [TransaksiController::class, 'detail'])->name('transaksi.detail');
     });
 
     // Routes khusus Admin

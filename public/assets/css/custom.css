@@ -2,9 +2,16 @@
 
 /* Layout dan Sidebar */
 .sidebar {
-    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;         /* Full window height */
+    width: 240px;          /* Sesuaikan dengan lebar sidebar Anda */
+    z-index: 1040;         /* Pastikan di atas konten */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     box-shadow: 0 0 35px 0 rgba(154, 161, 171, 0.15);
     transition: all 0.3s ease;
+    overflow-y: auto;      /* Scroll jika menu sidebar panjang */
 }
 
 .sidebar .nav-link {
@@ -267,7 +274,8 @@
     }
 
     .main-content {
-        margin-left: 0 !important;
+        margin-left: 240px;
+        transition: margin 0.3s ease;
     }
 
     .table-responsive {

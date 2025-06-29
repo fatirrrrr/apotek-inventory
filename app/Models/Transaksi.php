@@ -15,6 +15,7 @@ class Transaksi extends Model
         'total_harga',
         'nama_pembeli',
         'user_id',
+        'tanggal_transaksi',
     ];
 
     protected function casts(): array
